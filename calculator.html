@@ -1,9 +1,11 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Simple Calculator</title>
+
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -12,27 +14,34 @@
       justify-content: center;
       align-items: center;
       height: 100vh;
+      margin: 0;
     }
+
     .calculator {
       background: white;
       padding: 20px;
       border-radius: 12px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     }
+
     #result {
       width: 100%;
       height: 50px;
+      box-sizing: border-box;
       font-size: 1.5rem;
       text-align: right;
-      padding-right: 10px;
+      padding: 10px;
       margin-bottom: 10px;
       border: 1px solid #ccc;
+      border-radius: 6px;
     }
+
     .buttons {
       display: grid;
       grid-template-columns: repeat(4, 60px);
       gap: 10px;
     }
+
     .buttons button {
       height: 60px;
       font-size: 1.2rem;
@@ -41,27 +50,49 @@
       background: #e0e0e0;
       cursor: pointer;
     }
+
+    .buttons button:hover {
+      background: #ccc;
+    }
+
     .buttons button.operator {
       background: #ff9800;
       color: white;
     }
+
     .buttons button.equal {
       background: #4caf50;
       color: white;
       grid-column: span 2;
     }
+
     .buttons button.clear {
       background: #f44336;
       color: white;
       grid-column: span 2;
     }
+
+    .buttons button:active {
+      transform: scale(0.96);
+    }
+
+    .keyboard-info {
+      font-size: 12px;
+      color: #666;
+      text-align: center;
+      margin-top: 12px;
+    }
   </style>
 </head>
+
 <body>
 
   <div class="calculator">
+
     <input type="text" id="result" disabled />
+
     <div class="buttons">
+
       <button onclick="appendValue('7')">7</button>
       <button onclick="appendValue('8')">8</button>
       <button onclick="appendValue('9')">9</button>
@@ -83,27 +114,99 @@
       <button class="operator" onclick="appendValue('+')">+</button>
 
       <button class="clear" onclick="clearResult()">C</button>
+      <button onclick="deleteLast()">⌫</button>
+
     </div>
+
+    <div class="keyboard-info">
+      Keyboard: Numbers | + - * / | Enter | Backspace | Escape
+    </div>
+
   </div>
 
   <script>
     const result = document.getElementById('result');
 
+    // Add numbers and operators
     function appendValue(val) {
+      if (result.value === "Error") {
+        result.value = "";
+      }
+
       result.value += val;
     }
 
+    // Calculate the expression
     function calculate() {
       try {
-        result.value = eval(result.value);
-      } catch {
+        const expression = result.value.trim();
+
+        if (expression === "") {
+          return;
+        }
+
+        // Allow only numbers and mathematical operators
+        if (!/^[0-9+\-*/.()\s]+$/.test(expression)) {
+          throw new Error("Invalid expression");
+        }
+
+        const answer = eval(expression);
+
+        if (typeof answer !== "number" || !Number.isFinite(answer)) {
+          throw new Error("Invalid result");
+        }
+
+        result.value = answer;
+      } catch (error) {
         result.value = "Error";
       }
     }
 
+    // Clear the display
     function clearResult() {
-      result.value = '';
+      result.value = "";
     }
+
+    // Delete the last character
+    function deleteLast() {
+      if (result.value === "Error") {
+        result.value = "";
+      } else {
+        result.value = result.value.slice(0, -1);
+      }
+    }
+
+    // Keyboard support
+    document.addEventListener('keydown', function(event) {
+      const key = event.key;
+
+      // Number and decimal keys
+      if (/^[0-9.]$/.test(key)) {
+        appendValue(key);
+      }
+
+      // Mathematical operators
+      else if (['+', '-', '*', '/'].includes(key)) {
+        appendValue(key);
+      }
+
+      // Calculate using Enter or =
+      else if (key === 'Enter' || key === '=') {
+        event.preventDefault();
+        calculate();
+      }
+
+      // Delete last character
+      else if (key === 'Backspace') {
+        event.preventDefault();
+        deleteLast();
+      }
+
+      // Clear display using Escape
+      else if (key === 'Escape') {
+        clearResult();
+      }
+    });
   </script>
 
 </body>
